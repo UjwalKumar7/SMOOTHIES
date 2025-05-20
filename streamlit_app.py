@@ -26,35 +26,30 @@ pd_df=my_dataframe.to_pandas()
 ingredients_list=st.multiselect( 'Choose up to 5 intgredients: '
                                   ,my_dataframe
 )
-if ingredients_list:
+if ingredients_list and name_on_order:
     ingredients_string = ''
 
     for fruit_chosen in ingredients_list:
-        ingredients_string += fruit_chosen + ' '
+        ingredients_string += fruit_chosen + ', '
 
-        # Safely get the corresponding search_on value
-        match = pd_df[pd_df['FRUIT_NAME'] == fruit_chosen]
+        # Safe lookup for search_on
+        match = pd_df[pd_df['fruit_name'] == fruit_chosen]
         if not match.empty:
-            search_on = match['SEARCH_ON'].iloc[0]
+            search_on = match['search_on'].iloc[0]
         else:
-            search_on = fruit_chosen  # fallback if not found
+            search_on = fruit_chosen  # fallback
 
-        # Show subheader and nutrition info
-        st.subheader(fruit_chosen + ' Nutrition Information')
-        smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + search_on)
+        st.subheader(fruit_chosen + " Nutrition Information")
+        response = requests.get("https://my.smoothiefroot.com/api/fruit/" + search_on)
 
-        # Safely display the JSON response
-        if smoothiefroot_response.status_code == 200:
+        if response.status_code == 200:
             try:
-                sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
+                st.dataframe(data=response.json(), use_container_width=True)
             except Exception as e:
-                st.error(f"Failed to parse JSON for {fruit_chosen}: {e}")
+                st.error(f"Invalid JSON for {fruit_chosen}: {e}")
         else:
-            st.error(f"API request failed for {fruit_chosen} with status {smoothiefroot_response.status_code}")
+            st.error(f"API failed for {fruit_chosen} ({search_on}) - Status: {response.status_code}")
 
-    # Prepare the insert statement
-    my_insert_stmt = """INSERT INTO smoothies.public.orders(ingredients, name_on_order)
-                        VALUES ('""" + ingredients_string.strip() + """','""" + name_on_order + """')"""
 
 time_to_insert = st.button('Submit Order')
 
