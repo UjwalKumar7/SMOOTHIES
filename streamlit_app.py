@@ -29,26 +29,32 @@ ingredients_list=st.multiselect( 'Choose up to 5 intgredients: '
 if ingredients_list:
     ingredients_string = ''
 
-    for fruits_chosen in ingredients_list:
-        ingredients_string += fruits_chosen + ' '
-
     for fruit_chosen in ingredients_list:
-        if fruit_chosen in pd_df['FRUIT_NAME'].values:
-            search_on = pd_df.loc[pd_df['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]
+        ingredients_string += fruit_chosen + ' '
+
+        # Safely get the corresponding search_on value
+        match = pd_df[pd_df['FRUIT_NAME'] == fruit_chosen]
+        if not match.empty:
+            search_on = match['SEARCH_ON'].iloc[0]
         else:
             search_on = fruit_chosen  # fallback if not found
 
-        #st.write('The search value for', fruit_chosen, 'is', search_on, '.')
-
-
-        # 🍓 Show subheader and nutrition info as in the reference image
-        st.subheader(fruits_chosen + ' Nutrition Information')
+        # Show subheader and nutrition info
+        st.subheader(fruit_chosen + ' Nutrition Information')
         smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + search_on)
-        sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
 
-    my_insert_stmt = """ insert into smoothies.public.orders(ingredients, name_on_order)
-            values ('""" + ingredients_string + """','""" + name_on_order + """')"""
+        # Safely display the JSON response
+        if smoothiefroot_response.status_code == 200:
+            try:
+                sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
+            except Exception as e:
+                st.error(f"Failed to parse JSON for {fruit_chosen}: {e}")
+        else:
+            st.error(f"API request failed for {fruit_chosen} with status {smoothiefroot_response.status_code}")
 
+    # Prepare the insert statement
+    my_insert_stmt = """INSERT INTO smoothies.public.orders(ingredients, name_on_order)
+                        VALUES ('""" + ingredients_string.strip() + """','""" + name_on_order + """')"""
 
 time_to_insert = st.button('Submit Order')
 
