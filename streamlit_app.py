@@ -22,18 +22,21 @@ my_dataframe = session.table("smoothies.public.FRUIT_OPTIONS").select(col('Fruit
 ingredients_list=st.multiselect( 'Choose up to 5 intgredients: '
                                   ,my_dataframe
 )
-
 if ingredients_list:
-    
-  
-    ingredients_string=''
+    ingredients_string = ''
+
     for fruits_chosen in ingredients_list:
-        ingredients_string +=fruits_chosen
-        #st.write(ingredients_string)
+        ingredients_string += fruits_chosen + ' '
+        
+        # 🍓 Show subheader and nutrition info as in the reference image
+        st.subheader(fruits_chosen + ' Nutrition Information')
+        smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + fruits_chosen)
+        sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
 
     my_insert_stmt = """ insert into smoothies.public.orders(ingredients, name_on_order)
             values ('""" + ingredients_string + """','""" + name_on_order + """')"""
-    
+
+
 time_to_insert = st.button('Submit Order')
 
 
