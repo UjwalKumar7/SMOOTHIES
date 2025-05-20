@@ -31,7 +31,7 @@ if ingredients_list:
         
         # 🍓 Show subheader and nutrition info as in the reference image
         st.subheader(fruits_chosen + ' Nutrition Information')
-        smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + fruits_chosen)
+        smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + fruits_chosen.lower().strip())
         sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
 
     my_insert_stmt = """ insert into smoothies.public.orders(ingredients, name_on_order)
