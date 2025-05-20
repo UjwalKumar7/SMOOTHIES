@@ -25,17 +25,19 @@ ingredients_list=st.multiselect( 'Choose up to 5 intgredients: '
 )
 if ingredients_list:
     ingredients_string = ''
+    for fruit in ingredients_list:
+        ingredients_string += fruit + ' '
 
-    for fruits_chosen in ingredients_list:
-        ingredients_string += fruits_chosen + ' '
-        
-        # 🍓 Show subheader and nutrition info as in the reference image
-        st.subheader(fruits_chosen + ' Nutrition Information')
-        smoothiefroot_response = requests.get("https://smoothiefroot.com/api/fruit/all" + fruits_chosen.lower().strip())
-        sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
+    my_insert_stmt = """INSERT INTO smoothies.public.orders(ingredients, name_on_order)
+                        VALUES ('""" + ingredients_string.strip() + """', '""" + name_on_order + """')"""
 
-    my_insert_stmt = """ insert into smoothies.public.orders(ingredients, name_on_order)
-            values ('""" + ingredients_string + """','""" + name_on_order + """')"""
+    smoothiefroot_response = requests.get("https://smoothiefroot.com/api/fruit/all")
+    all_fruits_data = smoothiefroot_response.json()
+    selected_data = {fruit: all_fruits_data.get(fruit.lower()) for fruit in ingredients_list if fruit.lower() in all_fruits_data}
+
+    for fruit, data in selected_data.items():
+        st.subheader(fruit.capitalize() + " Nutrition Information")
+        st.dataframe(data)
 
 
 time_to_insert = st.button('Submit Order')
