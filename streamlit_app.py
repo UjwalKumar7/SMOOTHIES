@@ -38,12 +38,12 @@ if ingredients_list:
         else:
             search_on = fruit_chosen  # fallback if not found
 
-        st.write('The search value for', fruit_chosen, 'is', search_on, '.')
+        #st.write('The search value for', fruit_chosen, 'is', search_on, '.')
 
 
         # 🍓 Show subheader and nutrition info as in the reference image
         st.subheader(fruits_chosen + ' Nutrition Information')
-        smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + fruits_chosen)
+        smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + search_on)
         sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
 
     my_insert_stmt = """ insert into smoothies.public.orders(ingredients, name_on_order)
