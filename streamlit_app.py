@@ -32,8 +32,17 @@ if ingredients_list:
                         VALUES ('""" + ingredients_string.strip() + """', '""" + name_on_order + """')"""
 
     smoothiefroot_response = requests.get("https://smoothiefroot.com/api/fruit/all")
-    all_fruits_data = smoothiefroot_response.json()
-    selected_data = {fruit: all_fruits_data.get(fruit.lower()) for fruit in ingredients_list if fruit.lower() in all_fruits_data}
+if smoothiefroot_response.status_code == 200:
+    try:
+        all_fruits_data = smoothiefroot_response.json()
+        # Proceed with your logic
+    except ValueError:
+        st.error("⚠️ API did not return valid JSON.")
+else:
+    st.error(f"❌ API request failed with status code {smoothiefroot_response.status_code}")
+
+     all_fruits_data = smoothiefroot_response.json()
+     selected_data = {fruit: all_fruits_data.get(fruit.lower()) for fruit in ingredients_list if fruit.lower() in all_fruits_data}
 
     for fruit, data in selected_data.items():
         st.subheader(fruit.capitalize() + " Nutrition Information")
